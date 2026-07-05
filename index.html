@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Eny_wise</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{
+  --bg:#0a0a0a; --bg2:#111; --card:#151515; --text:#f5f5f5; --muted:#a3a3a3;
+  --border:#2a2a2a; --radius:14px; --sidebar-w:250px; --danger:#f55; --success:#0c8;
+}
+[data-theme="light"]{
+  --bg:#fafafa; --bg2:#fff; --card:#fff; --text:#0a0a0a; --muted:#555; --border:#e5e5e5;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);}
+img,video{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+ul{list-style:none;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+button,input,textarea,select{font-family:inherit;}
+
+/* Icons */
+.ic{width:16px;height:16px;display:inline-block;vertical-align:-3px;flex-shrink:0;}
+.sidebar-nav button .ic{width:18px;height:18px;}
+.icon-btn .ic{width:18px;height:18px;}
+.action-icon .ic{width:16px;height:16px;}
+.upload-box .ic{width:22px;height:22px;margin-bottom:6px;}
+.btn .ic{width:14px;height:14px;margin-right:4px;vertical-align:-2px;}
+
+/* ===== LOGIN ===== */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{width:100%;max-width:380px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 32px;}
+.login-box h1{font-size:22px;margin-bottom:6px;text-align:center;}
+.login-box p{color:var(--muted);font-size:13px;text-align:center;margin-bottom:28px;}
+.login-box input{width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);margin-bottom:14px;font-size:14px;}
+.login-box button{width:100%;padding:14px;border-radius:12px;border:none;background:var(--text);color:var(--bg);font-weight:700;cursor:pointer;font-size:14px;}
+.login-err{color:var(--danger);font-size:13px;text-align:center;margin-bottom:10px;display:none;}
+.login-logo{text-align:center;font-size:26px;font-weight:800;margin-bottom:20px;letter-spacing:1px;}
+
+/* ===== APP SHELL ===== */
+#app{display:none;min-height:100vh;}
+#app.show{display:flex;}
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:200;transition:left .3s;}
+.sidebar-logo{padding:24px 20px;font-weight:800;font-size:18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.sidebar-logo span{width:9px;height:9px;background:var(--text);border-radius:50%;}
+.sidebar-nav{flex:1;overflow-y:auto;padding:16px 12px;}
+.sidebar-nav button{width:100%;text-align:left;padding:12px 14px;border-radius:10px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.sidebar-nav button:hover{background:var(--card);color:var(--text);}
+.sidebar-nav button.active{background:var(--text);color:var(--bg);}
+.sidebar-foot{padding:16px;border-top:1px solid var(--border);}
+.sidebar-foot button{width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:13px;}
+.sidebar-close{display:none;position:absolute;top:20px;right:16px;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;}
+
+.main{flex:1;margin-left:var(--sidebar-w);min-height:100vh;}
+.topbar{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;z-index:100;}
+.topbar h2{font-size:20px;}
+.topbar-actions{display:flex;gap:12px;align-items:center;}
+.menu-toggle{display:none;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);width:38px;height:38px;cursor:pointer;font-size:16px;}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:15px;position:relative;display:flex;align-items:center;justify-content:center;}
+.badge{position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.content{padding:28px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ===== STATS ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:30px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+.stat-card .num{font-size:28px;font-weight:800;}
+.stat-card .lbl{color:var(--muted);font-size:13px;margin-top:4px;}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px;}
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+.panel-head h3{font-size:16px;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;border:1px solid var(--text);background:var(--text);color:var(--bg);}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff;}
+.btn-sm{padding:7px 12px;font-size:12px;}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--border);}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.table-wrap{overflow-x:auto;}
+.thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--bg);}
+.pill{padding:4px 10px;border-radius:20px;font-size:11px;border:1px solid var(--border);display:inline-block;}
+.pill.unread{background:var(--danger);color:#fff;border-color:var(--danger);}
+.row-actions{display:flex;gap:8px;}
+.action-icon{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+
+.search-input{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;min-width:200px;}
+.pagination{display:flex;gap:8px;justify-content:center;margin-top:16px;}
+.pagination button{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:13px;}
+.pagination button.active{background:var(--text);color:var(--bg);}
+
+/* ===== MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;padding:28px;}
+.modal h3{margin-bottom:20px;font-size:18px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+.field input,.field textarea,.field select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;}
+.field textarea{min-height:90px;resize:vertical;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+.upload-box{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;font-size:13px;color:var(--muted);position:relative;}
+.upload-box.dragover{border-color:var(--text);}
+.upload-preview{margin-top:12px;max-height:140px;border-radius:10px;overflow:hidden;}
+.upload-preview img,.upload-preview video{width:100%;max-height:140px;object-fit:cover;}
+.upload-progress{height:5px;background:var(--border);border-radius:10px;margin-top:10px;overflow:hidden;display:none;}
+.upload-progress-bar{height:100%;width:0;background:var(--text);transition:width .2s;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:var(--bg);padding:14px 22px;border-radius:12px;font-size:13px;font-weight:600;z-index:900;opacity:0;transform:translateY(20px);transition:.3s;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.err{background:var(--danger);color:#fff;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+.overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:190;display:none;}
+.overlay-bg.show{display:block;}
+
+@media(max-width:900px){
+  .sidebar{left:-260px;}
+  .sidebar.open{left:0;}
+  .sidebar-close{display:block;}
+  .main{margin-left:0;}
+  .menu-toggle{display:block;}
+  .field-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">ENY_WISE</div>
+    <h1>Admin Login</h1>
+    <p>Sign in to manage your website content</p>
+    <div class="login-err" id="loginErr">Incorrect password. Try again.</div>
+    <input type="password" id="loginPass" placeholder="Enter admin password">
+    <button id="loginBtn">Login</button>
+  </div>
+</div>
+
+<div class="overlay-bg" id="sidebarOverlay"></div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-close" id="sidebarClose">×</button>
+    <div class="sidebar-logo"><span></span>Eny_wise Admin</div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <button data-page="home" class="active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>Dashboard</button>
+      <button data-page="projects"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Projects</button>
+      <button data-page="services"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 1 1-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 1 2.4-8.4z"></path></svg>Services</button>
+      <button data-page="skills"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V14M4 10V3M12 21v-8M12 9V3M20 21v-6M20 11V3M1 14h6M9 9h6M17 11h6"></path></svg>Skills</button>
+      <button data-page="categories"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4L13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"></path><circle cx="7" cy="7" r="1"></circle></svg>Categories</button>
+      <button data-page="gallery"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5-11 11"></path></svg>Gallery</button>
+      <button data-page="testimonials"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-4.5 7.4A8.5 8.5 0 0 1 8 19.7L3 21l1.3-5a8.4 8.4 0 0 1-.8-3.6 8.5 8.5 0 1 1 17.5-.9z"></path></svg>Testimonials</button>
+      <button data-page="faqs"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"></path><path d="M12 17h.01"></path></svg>FAQs</button>
+      <button data-page="messages"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"></path><path d="M4 4l8 8 8-8"></path></svg>Messages</button>
+      <button data-page="settings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>Website Settings</button>
+      <button data-page="aisettings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"></path></svg>AI Settings</button>
+    </nav>
+    <div class="sidebar-foot">
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <h2 id="pageTitle">Dashboard</h2>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="notifBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg><span class="badge" id="notifBadge" style="display:none;">0</span></button>
+        <button class="icon-btn" id="darkToggle"></button>
+        <a href="index.html" target="_blank" class="btn btn-outline btn-sm">View Site ↗</a>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD HOME -->
+      <div class="page active" id="page-home">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="num" id="statProjects">0</div><div class="lbl">Total Projects</div></div>
+          <div class="stat-card"><div class="num" id="statGallery">0</div><div class="lbl">Gallery Items</div></div>
+          <div class="stat-card"><div class="num" id="statTesti">0</div><div class="lbl">Testimonials</div></div>
+          <div class="stat-card"><div class="num" id="statMsgs">0</div><div class="lbl">Unread Messages</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Recent Messages</h3></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Name</th><th>Subject</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="recentMsgsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="page" id="page-projects">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Projects</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <input class="search-input" id="projSearch" placeholder="Search projects...">
+              <button class="btn" id="addProjectBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add Project</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Image</th><th>Title</th><th>Category</th><th>Tech</th><th>Actions</th></tr></thead>
+            <tbody id="projectsBody"></tbody>
+          </table></div>
+          <div class="pagination" id="projectsPagination"></div>
+        </div>
+      </div>
+
+      <!-- SERVICES -->
+      <div class="page" id="page-services">
+        <div class="panel">
+          <div class="panel-head"><h3>Services</h3><button class="btn" id="addServiceBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add Service</button></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Icon</th><th>Title</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody id="servicesBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="page" id="page-skills">
+        <div class="panel">
+          <div class="panel-head"><h3>Skills</h3><button class="btn" id="addSkillBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add Skill</button></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Name</th><th>Percent</th><th>Actions</th></tr></thead>
+            <tbody id="skillsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="page" id="page-categories">
+        <div class="panel">
+          <div class="panel-head"><h3>Portfolio Categories</h3><button class="btn" id="addCategoryBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add Category</button></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Name</th><th>Actions</th></tr></thead>
+            <tbody id="categoriesBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- GALLERY -->
+      <div class="page" id="page-gallery">
+        <div class="panel">
+          <div class="panel-head"><h3>Gallery</h3><button class="btn" id="addGalleryBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add Media</button></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Preview</th><th>Title</th><th>Type</th><th>Actions</th></tr></thead>
+            <tbody id="galleryBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- TESTIMONIALS -->
+      <div class="page" id="page-testimonials">
+        <div class="panel">
+          <div class="panel-head"><h3>Testimonials</h3><button class="btn" id="addTestiBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add Testimonial</button></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Name</th><th>Company</th><th>Text</th><th>Source</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="testimonialsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- FAQS -->
+      <div class="page" id="page-faqs">
+        <div class="panel">
+          <div class="panel-head"><h3>FAQs</h3><button class="btn" id="addFaqBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add FAQ</button></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Question</th><th>Answer</th><th>Actions</th></tr></thead>
+            <tbody id="faqsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="page" id="page-messages">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Contact Messages</h3>
+            <input class="search-input" id="msgSearch" placeholder="Search messages...">
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="messagesBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- WEBSITE SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="panel">
+          <div class="panel-head"><h3>General Website Settings</h3></div>
+          <div class="field"><label>Website / Company Name</label><input id="setSiteName"></div>
+          <div class="field"><label>Hero Title</label><input id="setHeroTitle"></div>
+          <div class="field"><label>Hero Subtitle</label><textarea id="setHeroSubtitle"></textarea></div>
+          <div class="field"><label>About Title</label><input id="setAboutTitle"></div>
+          <div class="field"><label>About Content</label><textarea id="setAboutContent"></textarea></div>
+          <div class="field-row">
+            <div class="field"><label>Email</label><input id="setEmail"></div>
+            <div class="field"><label>Phone / WhatsApp 1</label><input id="setPhone1"></div>
+          </div>
+          <div class="field"><label>Phone / WhatsApp 2</label><input id="setPhone2"></div>
+          <div class="field-row">
+            <div class="field"><label>Stat 1 Number</label><input id="setStat1Num"></div>
+            <div class="field"><label>Stat 1 Label</label><input id="setStat1Label"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Stat 2 Number</label><input id="setStat2Num"></div>
+            <div class="field"><label>Stat 2 Label</label><input id="setStat2Label"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Stat 3 Number</label><input id="setStat3Num"></div>
+            <div class="field"><label>Stat 3 Label</label><input id="setStat3Label"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Stat 4 Number</label><input id="setStat4Num"></div>
+            <div class="field"><label>Stat 4 Label</label><input id="setStat4Label"></div>
+          </div>
+          <div class="field"><label>Footer Tagline</label><textarea id="setFooterText"></textarea></div>
+          <div class="field" id="logoFieldContainer"></div>
+          <div class="field" id="heroImageFieldContainer"></div>
+          <div class="field" id="aboutImageFieldContainer"></div>
+          <button class="btn" id="saveSettingsBtn">Save Settings</button>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Change Admin Password</h3></div>
+          <div class="field"><label>New Password</label><input type="password" id="newPassInput" placeholder="Enter new admin password"></div>
+          <button class="btn btn-outline" id="changePassBtn">Update Password</button>
+        </div>
+      </div>
+
+      <!-- AI SETTINGS -->
+      <div class="page" id="page-aisettings">
+        <div class="panel">
+          <div class="panel-head"><h3>AI Assistant Settings</h3></div>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">The Groq API key is entered once by a visitor directly on the website's AI widget and stored permanently in their browser. From here you can view/reset the model used and clear the key stored on THIS browser only.</p>
+          <div class="field"><label>Model</label><input value="meta-llama/llama-4-scout-17b-16e-instruct" disabled></div>
+          <div class="field"><label>Groq API Key (this browser)</label><input type="password" id="aiKeyDisplay" placeholder="Not set on this device"></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="saveAiKeyBtn">Save Key</button>
+            <button class="btn btn-danger" id="clearAiKeyBtn">Clear Key</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ===== GENERIC MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== ICONS ===================== */
+const ICONS = {
+  edit: `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>`,
+  trash: `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>`,
+  eye: `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+  uploadCloud: `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l-4-4-4 4"></path><path d="M12 12v9"></path><path d="M20.4 18.4A5 5 0 0 0 18 9h-1.3A8 8 0 1 0 3 16.3"></path></svg>`,
+  checkCircle: `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-6"></path></svg>`,
+  moon: `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg>`,
+  sun: `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>`
+};
+
+/* ===================== CONFIG ===================== */
+const CLOUD_NAME = "dq7lo9prp";
+const UPLOAD_PRESET = "Eny_wise Ai";
+const DEFAULT_PASSWORD = "Ayomide@12";
+
+/* ===================== DATA LAYER (shared with index.html) ===================== */
+const DEFAULTS = {
+  settings:{
+    siteName:"ENY_WISE WEBSITE APPLICATIONS AND GRAPHICS DESIGNER", heroTitle:"We Build Premium Digital Experiences",
+    heroSubtitle:"Eny_wise Web App Developers & Graphics Designer crafts high-performance websites, mobile apps, and stunning visual brands.",
+    aboutTitle:"Crafting Excellence Since Day One",
+    aboutContent:"Eny_wise is a full-service digital studio specializing in web development, mobile applications and graphic design — delivering production-ready, pixel-perfect work for businesses that demand quality.",
+    email:"Enywise652@gmail.com", phone1:"09025213498", phone2:"08149830278",
+    theme:"dark", logo:"", heroImage:"", aboutImage:"",
+    stat1Num:"50+", stat1Label:"Projects Delivered",
+    stat2Num:"30+", stat2Label:"Happy Clients",
+    stat3Num:"3+", stat3Label:"Years Experience",
+    stat4Num:"24/7", stat4Label:"Support",
+    footerText:"Premium web, app and graphics design studio delivering production-ready digital solutions."
+  },
+  services:[
+    {id:1,icon:"💻",title:"Web Development",desc:"Custom, responsive, high-performance websites built with modern technology."},
+    {id:2,icon:"📱",title:"App Development",desc:"Native-feel mobile applications for Android with clean UX."},
+    {id:3,icon:"🎨",title:"Graphics Design",desc:"Premium branding, logos, print design and social media graphics."},
+    {id:4,icon:"🤖",title:"AI Integration",desc:"Smart chat assistants and automation tools embedded into your product."},
+    {id:5,icon:"🛒",title:"E-commerce",desc:"Full online stores with payment integration and admin control."},
+    {id:6,icon:"🔧",title:"Maintenance",desc:"Ongoing support, updates and performance optimization."}
+  ],
+  skills:[
+    {id:1,name:"Web Development",percent:95},
+    {id:2,name:"Mobile App Development",percent:88},
+    {id:3,name:"UI/UX & Graphics Design",percent:92},
+    {id:4,name:"AI Integration",percent:85}
+  ],
+  categories:["All","Web App","Mobile App","Branding","UI/UX","Graphics"],
+  projects:[
+    {id:1,title:"Sample Business Website",desc:"A modern business site with booking and admin panel.",category:"Web App",image:"",video:"",tech:["HTML","CSS","JavaScript"],link:"",apk:"",live:""},
+    {id:2,title:"Sample Delivery App",desc:"Mobile app concept for local delivery services.",category:"Mobile App",image:"",video:"",tech:["Android","Firebase"],link:"",apk:"",live:""}
+  ],
+  gallery:[],
+  testimonials:[
+    {id:1,name:"Adaeze O.",role:"Business Owner",text:"Eny_wise delivered exactly what we needed — fast, professional and beautiful.",approved:true},
+    {id:2,name:"Tunde B.",role:"Startup Founder",text:"Incredible attention to detail. Our app looks and feels premium now.",approved:true},
+    {id:3,name:"Chiamaka N.",role:"Marketing Lead",text:"Communication was smooth and the final product exceeded expectations.",approved:true}
+  ],
+  faqs:[
+    {q:"What services does Eny_wise offer?",a:"We offer web development, mobile app development, graphics design and AI integration services."},
+    {q:"How long does a typical project take?",a:"Depending on scope, most projects take between 1 to 4 weeks from start to delivery."},
+    {q:"Do you offer post-launch support?",a:"Yes, we provide maintenance and support packages after project delivery."},
+    {q:"How can I contact you?",a:"You can call, WhatsApp, or email us directly using the contact details on this page."}
+  ],
+  messages:[]
+};
+
+function loadData(key){
+  const raw = localStorage.getItem('enywise_'+key);
+  if(!raw){ localStorage.setItem('enywise_'+key, JSON.stringify(DEFAULTS[key])); return JSON.parse(JSON.stringify(DEFAULTS[key])); }
+  try{ return JSON.parse(raw); }catch(e){ return JSON.parse(JSON.stringify(DEFAULTS[key])); }
+}
+function saveData(key,val){ localStorage.setItem('enywise_'+key, JSON.stringify(val)); }
+
+let settings = loadData('settings');
+let services = loadData('services');
+let skills = loadData('skills');
+let categories = loadData('categories');
+if(!categories.includes('Graphics')){ categories.push('Graphics'); saveData('categories',categories); }
+let projects = loadData('projects');
+let gallery = loadData('gallery');
+let testimonials = loadData('testimonials');
+let faqs = loadData('faqs');
+let messages = loadData('messages');
+
+function escapeHtml(str){ if(str===undefined||str===null)return''; return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function uid(){ return Date.now() + Math.floor(Math.random()*1000); }
+
+/* ===================== TOAST ===================== */
+function toast(msg,isErr=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(isErr?' err':'');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+/* ===================== LOGIN ===================== */
+const loginScreen=document.getElementById('loginScreen'), appEl=document.getElementById('app');
+function getAdminPass(){ return localStorage.getItem('enywise_admin_pass') || DEFAULT_PASSWORD; }
+document.getElementById('loginBtn').addEventListener('click',attemptLogin);
+document.getElementById('loginPass').addEventListener('keypress',(e)=>{ if(e.key==='Enter') attemptLogin(); });
+function attemptLogin(){
+  const val=document.getElementById('loginPass').value;
+  if(val===getAdminPass()){
+    sessionStorage.setItem('enywise_admin_session','1');
+    loginScreen.style.display='none';
+    appEl.classList.add('show');
+    initDashboard();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+if(sessionStorage.getItem('enywise_admin_session')==='1'){
+  loginScreen.style.display='none';
+  appEl.classList.add('show');
+  initDashboard();
+}
+document.getElementById('logoutBtn').addEventListener('click',()=>{
+  sessionStorage.removeItem('enywise_admin_session');
+  location.reload();
+});
+
+/* ===================== THEME ===================== */
+const darkToggle=document.getElementById('darkToggle');
+function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); darkToggle.innerHTML = t==='dark' ? ICONS.moon : ICONS.sun; }
+let adminTheme = localStorage.getItem('enywise_admin_theme') || 'dark';
+applyTheme(adminTheme);
+darkToggle.addEventListener('click',()=>{ adminTheme = adminTheme==='dark'?'light':'dark'; localStorage.setItem('enywise_admin_theme',adminTheme); applyTheme(adminTheme); });
+
+/* ===================== SIDEBAR NAV ===================== */
+const sidebar=document.getElementById('sidebar'), sidebarOverlay=document.getElementById('sidebarOverlay');
+document.getElementById('menuToggle').addEventListener('click',()=>{ sidebar.classList.add('open'); sidebarOverlay.classList.add('show'); });
+document.getElementById('sidebarClose').addEventListener('click',closeSidebar);
+sidebarOverlay.addEventListener('click',closeSidebar);
+function closeSidebar(){ sidebar.classList.remove('open'); sidebarOverlay.classList.remove('show'); }
+
+const pageTitles={home:"Dashboard",projects:"Projects",services:"Services",skills:"Skills",categories:"Categories",gallery:"Gallery",testimonials:"Testimonials",faqs:"FAQs",messages:"Messages",settings:"Website Settings",aisettings:"AI Settings"};
+document.getElementById('sidebarNav').addEventListener('click',(e)=>{
+  const btn=e.target.closest('button[data-page]');
+  if(!btn) return;
+  document.querySelectorAll('.sidebar-nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const page=btn.dataset.page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[page];
+  closeSidebar();
+});
+
+/* ===================== MODAL HELPERS ===================== */
+const modalOverlay=document.getElementById('modalOverlay'), modalBody=document.getElementById('modalBody');
+function openModal(html){ modalBody.innerHTML=html; modalOverlay.classList.add('show'); }
+function closeModal(){ modalOverlay.classList.remove('show'); modalBody.innerHTML=''; }
+modalOverlay.addEventListener('click',(e)=>{ if(e.target===modalOverlay) closeModal(); });
+
+/* ===================== CLOUDINARY UPLOAD ===================== */
+async function uploadToCloudinary(file, progressCb){
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', UPLOAD_PRESET);
+  return new Promise((resolve,reject)=>{
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.upload.onprogress = (e)=>{ if(e.lengthComputable && progressCb) progressCb(Math.round((e.loaded/e.total)*100)); };
+    xhr.onload = ()=>{
+      try{
+        const data = JSON.parse(xhr.responseText);
+        if(data.secure_url) resolve(data.secure_url);
+        else reject(data.error?.message || 'Upload failed');
+      }catch(err){ reject('Upload failed'); }
+    };
+    xhr.onerror = ()=>reject('Network error during upload');
+    xhr.send(formData);
+  });
+}
+
+function buildUploadBox(id, existingUrl='', accept='image/*,video/*', labelText='Click to upload image or video'){
+  return `
+    <div class="field">
+      <label>Media Upload (Cloudinary)</label>
+      <div class="upload-box" id="${id}Box">
+        <input type="file" id="${id}File" accept="${accept}" style="display:none;">
+        <div id="${id}Label">${ICONS.uploadCloud}<br>${labelText}</div>
+        <div class="upload-preview" id="${id}Preview">${existingUrl ? renderMediaPreview(existingUrl) : ''}</div>
+        <div class="upload-progress" id="${id}Progress"><div class="upload-progress-bar" id="${id}ProgressBar"></div></div>
+      </div>
+      <input type="hidden" id="${id}" value="${escapeHtml(existingUrl)}">
+    </div>`;
+}
+function renderMediaPreview(url){
+  if(!url) return '';
+  const isVideo = /\.(mp4|webm|mov|ogg)(\?|$)/i.test(url) || url.includes('/video/');
+  return isVideo ? `<video src="${escapeHtml(url)}" controls></video>` : `<img src="${escapeHtml(url)}">`;
+}
+function wireUploadBox(id, labelText='Click to upload image or video'){
+  const box=document.getElementById(id+'Box');
+  const fileInput=document.getElementById(id+'File');
+  const hiddenInput=document.getElementById(id);
+  const preview=document.getElementById(id+'Preview');
+  const progress=document.getElementById(id+'Progress');
+  const progressBar=document.getElementById(id+'ProgressBar');
+  const label=document.getElementById(id+'Label');
+  box.addEventListener('click',(e)=>{ if(e.target.tagName!=='INPUT'||e.target.type!=='hidden') fileInput.click(); });
+  box.addEventListener('dragover',(e)=>{ e.preventDefault(); box.classList.add('dragover'); });
+  box.addEventListener('dragleave',()=>box.classList.remove('dragover'));
+  box.addEventListener('drop',(e)=>{ e.preventDefault(); box.classList.remove('dragover'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+  fileInput.addEventListener('change',()=>{ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+  async function handleFile(file){
+    label.innerHTML = ICONS.uploadCloud+'<br>Uploading...';
+    progress.style.display='block';
+    try{
+      const url = await uploadToCloudinary(file, (pct)=>{ progressBar.style.width=pct+'%'; });
+      hiddenInput.value = url;
+      preview.innerHTML = renderMediaPreview(url);
+      label.innerHTML = ICONS.checkCircle+'<br>Upload complete — click to replace';
+      toast('Media uploaded successfully');
+    }catch(err){
+      label.innerHTML = ICONS.uploadCloud+'<br>'+labelText;
+      toast('Upload failed: '+err, true);
+    }
+    progress.style.display='none';
+    progressBar.style.width='0%';
+  }
+}
+
+/* ===================== DASHBOARD INIT ===================== */
+function initDashboard(){
+  renderStats();
+  renderProjects();
+  renderServices();
+  renderSkills();
+  renderCategories();
+  renderGallery();
+  renderTestimonials();
+  renderFaqs();
+  renderMessages();
+  loadSettingsForm();
+  loadAiSettingsForm();
+}
+
+/* ===================== STATS ===================== */
+function renderStats(){
+  document.getElementById('statProjects').textContent = projects.length;
+  document.getElementById('statGallery').textContent = gallery.length;
+  document.getElementById('statTesti').textContent = testimonials.length;
+  const unread = messages.filter(m=>!m.read).length;
+  document.getElementById('statMsgs').textContent = unread;
+  document.getElementById('notifBadge').style.display = unread>0 ? 'flex' : 'none';
+  document.getElementById('notifBadge').textContent = unread;
+  document.getElementById('recentMsgsBody').innerHTML = messages.slice(0,5).map(m=>`
+    <tr><td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.subject)}</td><td>${new Date(m.date).toLocaleDateString()}</td>
+    <td><span class="pill ${m.read?'':'unread'}">${m.read?'Read':'Unread'}</span></td></tr>`).join('') || `<tr><td colspan="4" class="empty-state">No messages yet.</td></tr>`;
+}
+document.getElementById('notifBtn').addEventListener('click',()=>{
+  document.querySelectorAll('.sidebar-nav button').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-page="messages"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-messages').classList.add('active');
+  document.getElementById('pageTitle').textContent='Messages';
+});
+
+/* ===================== PROJECTS CRUD ===================== */
+let projSearchTerm='', projPage=1; const PROJ_PER_PAGE=6;
+function renderProjects(){
+  let list = projects.filter(p=>p.title.toLowerCase().includes(projSearchTerm.toLowerCase()));
+  const totalPages = Math.max(1, Math.ceil(list.length/PROJ_PER_PAGE));
+  if(projPage>totalPages) projPage=totalPages;
+  const pageItems = list.slice((projPage-1)*PROJ_PER_PAGE, projPage*PROJ_PER_PAGE);
+  document.getElementById('projectsBody').innerHTML = pageItems.map(p=>`
+    <tr>
+      <td>${p.image?`<img class="thumb" src="${escapeHtml(p.image)}">`:'—'}</td>
+      <td>${escapeHtml(p.title)}</td>
+      <td><span class="pill">${escapeHtml(p.category)}</span></td>
+      <td>${(p.tech||[]).join(', ')}</td>
+      <td class="row-actions">
+        <button class="action-icon" onclick="editProject(${p.id})">${ICONS.edit}</button>
+        <button class="action-icon" onclick="deleteProject(${p.id})">${ICONS.trash}</button>
+      </td>
+    </tr>`).join('') || `<tr><td colspan="5" class="empty-state">No projects found.</td></tr>`;
+  const pag=document.getElementById('projectsPagination');
+  pag.innerHTML='';
+  for(let i=1;i<=totalPages;i++){
+    const b=document.createElement('button');
+    b.textContent=i; if(i===projPage) b.classList.add('active');
+    b.addEventListener('click',()=>{ projPage=i; renderProjects(); });
+    pag.appendChild(b);
+  }
+  renderStats();
+}
+document.getElementById('projSearch').addEventListener('input',(e)=>{ projSearchTerm=e.target.value; projPage=1; renderProjects(); });
+document.getElementById('addProjectBtn').addEventListener('click',()=>openProjectModal());
+function openProjectModal(proj=null){
+  const catOptions = categories.filter(c=>c!=='All').map(c=>`<option value="${escapeHtml(c)}" ${proj&&proj.category===c?'selected':''}>${escapeHtml(c)}</option>`).join('');
+  openModal(`
+    <h3>${proj?'Edit':'Add'} Project</h3>
+    <div class="field"><label>Title</label><input id="pfTitle" value="${proj?escapeHtml(proj.title):''}"></div>
+    <div class="field"><label>Description</label><textarea id="pfDesc">${proj?escapeHtml(proj.desc):''}</textarea></div>
+    <div class="field"><label>Category</label><select id="pfCategory">${catOptions}</select></div>
+    <div class="field"><label>Technologies (comma separated)</label><input id="pfTech" value="${proj?escapeHtml((proj.tech||[]).join(', ')):''}"></div>
+    ${buildUploadBox('pfImage', proj?proj.image:'', 'image/*', 'Click to upload project image')}
+    ${buildUploadBox('pfVideoUpload', proj?proj.video:'', 'video/*', 'Click to upload project video (optional)')}
+    <div class="field-row">
+      <div class="field"><label>Website Link</label><input id="pfLink" value="${proj?escapeHtml(proj.link):''}"></div>
+      <div class="field"><label>Live Preview URL</label><input id="pfLive" value="${proj?escapeHtml(proj.live):''}"></div>
+    </div>
+    <div class="field"><label>Play Store / App Download Link</label><input id="pfApk" value="${proj?escapeHtml(proj.apk):''}"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn" id="saveProjectBtn">${proj?'Update':'Add'} Project</button>
+    </div>`);
+  wireUploadBox('pfImage','Click to upload project image');
+  wireUploadBox('pfVideoUpload','Click to upload project video (optional)');
+  document.getElementById('saveProjectBtn').addEventListener('click',()=>saveProject(proj?proj.id:null));
+}
+function saveProject(id){
+  const title=document.getElementById('pfTitle').value.trim();
+  const desc=document.getElementById('pfDesc').value.trim();
+  const category=document.getElementById('pfCategory').value;
+  const tech=document.getElementById('pfTech').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const image=document.getElementById('pfImage').value.trim();
+  const video=document.getElementById('pfVideoUpload').value.trim();
+  const link=document.getElementById('pfLink').value.trim();
+  const live=document.getElementById('pfLive').value.trim();
+  const apk=document.getElementById('pfApk').value.trim();
+  if(!title){ toast('Title is required', true); return; }
+  if(id){
+    const idx=projects.findIndex(p=>p.id===id);
+    projects[idx]={...projects[idx],title,desc,category,tech,image,video,link,live,apk};
+  } else {
+    projects.push({id:uid(),title,desc,category,tech,image,video,link,live,apk});
+  }
+  saveData('projects',projects);
+  renderProjects(); closeModal(); toast('Project saved successfully');
+}
+function editProject(id){ openProjectModal(projects.find(p=>p.id===id)); }
+function deleteProject(id){ if(confirm('Delete this project?')){ projects=projects.filter(p=>p.id!==id); saveData('projects',projects); renderProjects(); toast('Project deleted'); } }
+
+/* ===================== SERVICES CRUD ===================== */
+function renderServices(){
+  document.getElementById('servicesBody').innerHTML = services.map(s=>`
+    <tr><td style="font-size:20px;">${s.icon}</td><td>${escapeHtml(s.title)}</td><td>${escapeHtml(s.desc)}</td>
+    <td class="row-actions"><button class="action-icon" onclick="editService(${s.id})">${ICONS.edit}</button><button class="action-icon" onclick="deleteService(${s.id})">${ICONS.trash}</button></td></tr>
+  `).join('') || `<tr><td colspan="4" class="empty-state">No services yet.</td></tr>`;
+}
+document.getElementById('addServiceBtn').addEventListener('click',()=>openServiceModal());
+function openServiceModal(s=null){
+  openModal(`
+    <h3>${s?'Edit':'Add'} Service</h3>
+    <div class="field"><label>Icon (emoji or SVG markup)</label><input id="svIcon" value="${s?escapeHtml(s.icon):'✨'}"></div>
+    <div class="field"><label>Title</label><input id="svTitle" value="${s?escapeHtml(s.title):''}"></div>
+    <div class="field"><label>Description</label><textarea id="svDesc">${s?escapeHtml(s.desc):''}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn" id="saveServiceBtn">${s?'Update':'Add'}</button></div>
+  `);
+  document.getElementById('saveServiceBtn').addEventListener('click',()=>saveService(s?s.id:null));
+}
+function saveService(id){
+  const icon=document.getElementById('svIcon').value.trim()||'✨';
+  const title=document.getElementById('svTitle').value.trim();
+  const desc=document.getElementById('svDesc').value.trim();
+  if(!title){ toast('Title is required', true); return; }
+  if(id){ const idx=services.findIndex(s=>s.id===id); services[idx]={...services[idx],icon,title,desc}; }
+  else { services.push({id:uid(),icon,title,desc}); }
+  saveData('services',services); renderServices(); closeModal(); toast('Service saved');
+}
+function editService(id){ openServiceModal(services.find(s=>s.id===id)); }
+function deleteService(id){ if(confirm('Delete this service?')){ services=services.filter(s=>s.id!==id); saveData('services',services); renderServices(); toast('Service deleted'); } }
+
+/* ===================== SKILLS CRUD ===================== */
+function renderSkills(){
+  document.getElementById('skillsBody').innerHTML = skills.map(s=>`
+    <tr><td>${escapeHtml(s.name)}</td><td>${s.percent}%</td>
+    <td class="row-actions"><button class="action-icon" onclick="editSkill(${s.id})">${ICONS.edit}</button><button class="action-icon" onclick="deleteSkill(${s.id})">${ICONS.trash}</button></td></tr>
+  `).join('') || `<tr><td colspan="3" class="empty-state">No skills yet.</td></tr>`;
+}
+document.getElementById('addSkillBtn').addEventListener('click',()=>openSkillModal());
+function openSkillModal(s=null){
+  openModal(`
+    <h3>${s?'Edit':'Add'} Skill</h3>
+    <div class="field"><label>Skill Name</label><input id="skName" value="${s?escapeHtml(s.name):''}"></div>
+    <div class="field"><label>Proficiency Percent (0-100)</label><input type="number" min="0" max="100" id="skPercent" value="${s?s.percent:80}"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn" id="saveSkillBtn">${s?'Update':'Add'}</button></div>
+  `);
+  document.getElementById('saveSkillBtn').addEventListener('click',()=>saveSkill(s?s.id:null));
+}
+function saveSkill(id){
+  const name=document.getElementById('skName').value.trim();
+  let percent=parseInt(document.getElementById('skPercent').value,10);
+  if(!name){ toast('Skill name is required', true); return; }
+  if(isNaN(percent)||percent<0) percent=0;
+  if(percent>100) percent=100;
+  if(id){ const idx=skills.findIndex(s=>s.id===id); skills[idx]={...skills[idx],name,percent}; }
+  else { skills.push({id:uid(),name,percent}); }
+  saveData('skills',skills); renderSkills(); closeModal(); toast('Skill saved');
+}
+function editSkill(id){ openSkillModal(skills.find(s=>s.id===id)); }
+function deleteSkill(id){ if(confirm('Delete this skill?')){ skills=skills.filter(s=>s.id!==id); saveData('skills',skills); renderSkills(); toast('Skill deleted'); } }
+
+/* ===================== CATEGORIES CRUD ===================== */
+function renderCategories(){
+  document.getElementById('categoriesBody').innerHTML = categories.map((c,i)=>`
+    <tr><td>${escapeHtml(c)}</td><td class="row-actions">
+      ${c!=='All'?`<button class="action-icon" onclick="editCategory(${i})">${ICONS.edit}</button><button class="action-icon" onclick="deleteCategory(${i})">${ICONS.trash}</button>`:'<span class="pill">Default</span>'}
+    </td></tr>`).join('');
+}
+document.getElementById('addCategoryBtn').addEventListener('click',()=>openCategoryModal());
+function openCategoryModal(index=null){
+  const val = index!==null ? categories[index] : '';
+  openModal(`
+    <h3>${index!==null?'Edit':'Add'} Category</h3>
+    <div class="field"><label>Category Name</label><input id="catName" value="${escapeHtml(val)}"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn" id="saveCatBtn">${index!==null?'Update':'Add'}</button></div>
+  `);
+  document.getElementById('saveCatBtn').addEventListener('click',()=>saveCategory(index));
+}
+function saveCategory(index){
+  const name=document.getElementById('catName').value.trim();
+  if(!name){ toast('Category name is required', true); return; }
+  if(index!==null) categories[index]=name; else categories.push(name);
+  saveData('categories',categories); renderCategories(); renderProjects(); closeModal(); toast('Category saved');
+}
+function editCategory(i){ openCategoryModal(i); }
+function deleteCategory(i){ if(confirm('Delete this category?')){ categories.splice(i,1); saveData('categories',categories); renderCategories(); renderProjects(); toast('Category deleted'); } }
+
+/* ===================== GALLERY CRUD ===================== */
+function renderGallery(){
+  document.getElementById('galleryBody').innerHTML = gallery.map(g=>`
+    <tr><td>${g.type==='video'?`<video class="thumb" src="${escapeHtml(g.url)}"></video>`:`<img class="thumb" src="${escapeHtml(g.url)}">`}</td>
+    <td>${escapeHtml(g.title||'—')}</td>
+    <td><span class="pill">${g.type}</span></td>
+    <td class="row-actions">
+      <button class="action-icon" onclick="editGallery(${g.id})">${ICONS.edit}</button>
+      <button class="action-icon" onclick="deleteGallery(${g.id})">${ICONS.trash}</button>
+    </td></tr>
+  `).join('') || `<tr><td colspan="4" class="empty-state">No gallery items yet.</td></tr>`;
+  renderStats();
+}
+document.getElementById('addGalleryBtn').addEventListener('click',()=>openGalleryModal());
+function openGalleryModal(g=null){
+  openModal(`
+    <h3>${g?'Edit':'Add'} Gallery Media</h3>
+    <div class="field"><label>Title</label><input id="galTitle" value="${g?escapeHtml(g.title||''):''}"></div>
+    ${buildUploadBox('galMedia', g?g.url:'', 'image/*,video/*', 'Click to upload gallery image or video')}
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn" id="saveGalBtn">${g?'Update':'Add'}</button></div>
+  `);
+  wireUploadBox('galMedia','Click to upload gallery image or video');
+  document.getElementById('saveGalBtn').addEventListener('click',()=>saveGallery(g?g.id:null));
+}
+function saveGallery(id){
+  const title=document.getElementById('galTitle').value.trim();
+  const url=document.getElementById('galMedia').value.trim();
+  if(!url){ toast('Please upload a media file', true); return; }
+  const isVideo = /\.(mp4|webm|mov|ogg)(\?|$)/i.test(url) || url.includes('/video/');
+  if(id){
+    const idx=gallery.findIndex(x=>x.id===id);
+    gallery[idx]={...gallery[idx],title,url,type:isVideo?'video':'image'};
+  } else {
+    gallery.push({id:uid(),title,url,type:isVideo?'video':'image'});
+  }
+  saveData('gallery',gallery); renderGallery(); closeModal(); toast(id?'Gallery item updated':'Media added to gallery');
+}
+function editGallery(id){ openGalleryModal(gallery.find(g=>g.id===id)); }
+function deleteGallery(id){ if(confirm('Delete this media item?')){ gallery=gallery.filter(g=>g.id!==id); saveData('gallery',gallery); renderGallery(); toast('Deleted from gallery'); } }
+
+/* ===================== TESTIMONIALS CRUD ===================== */
+function renderTestimonials(){
+  document.getElementById('testimonialsBody').innerHTML = testimonials.map(t=>`
+    <tr>
+      <td>${escapeHtml(t.name)}</td>
+      <td>${escapeHtml(t.role)}</td>
+      <td>${escapeHtml(t.text.slice(0,60))}${t.text.length>60?'...':''}</td>
+      <td><span class="pill">${t.source==='customer'?'Customer':'Admin'}</span></td>
+      <td><span class="pill ${t.approved===false?'unread':''}">${t.approved===false?'Hidden':'Approved'}</span></td>
+      <td class="row-actions">
+        <button class="action-icon" onclick="toggleTestiApproval(${t.id})" title="Approve / Hide">${ICONS.checkCircle}</button>
+        <button class="action-icon" onclick="editTesti(${t.id})">${ICONS.edit}</button>
+        <button class="action-icon" onclick="deleteTesti(${t.id})">${ICONS.trash}</button>
+      </td>
+    </tr>`).join('') || `<tr><td colspan="6" class="empty-state">No testimonials yet.</td></tr>`;
+  renderStats();
+}
+document.getElementById('addTestiBtn').addEventListener('click',()=>openTestiModal());
+function openTestiModal(t=null){
+  openModal(`
+    <h3>${t?'Edit':'Add'} Testimonial</h3>
+    <div class="field"><label>Customer Name</label><input id="tfName" value="${t?escapeHtml(t.name):''}"></div>
+    <div class="field"><label>Company Name</label><input id="tfRole" value="${t?escapeHtml(t.role):''}"></div>
+    <div class="field"><label>Testimonial Description</label><textarea id="tfText">${t?escapeHtml(t.text):''}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn" id="saveTestiBtn">${t?'Update':'Add'}</button></div>
+  `);
+  document.getElementById('saveTestiBtn').addEventListener('click',()=>saveTesti(t?t.id:null));
+}
+function saveTesti(id){
+  const name=document.getElementById('tfName').value.trim();
+  const role=document.getElementById('tfRole').value.trim();
+  const text=document.getElementById('tfText').value.trim();
+  if(!name||!text){ toast('Name and text are required', true); return; }
+  if(id){ const idx=testimonials.findIndex(t=>t.id===id); testimonials[idx]={...testimonials[idx],name,role,text}; }
+  else { testimonials.push({id:uid(),name,role,text,approved:true}); }
+  saveData('testimonials',testimonials); renderTestimonials(); closeModal(); toast('Testimonial saved');
+}
+function editTesti(id){ openTestiModal(testimonials.find(t=>t.id===id)); }
+function deleteTesti(id){ if(confirm('Delete this testimonial?')){ testimonials=testimonials.filter(t=>t.id!==id); saveData('testimonials',testimonials); renderTestimonials(); toast('Testimonial deleted'); } }
+function toggleTestiApproval(id){
+  const idx=testimonials.findIndex(t=>t.id===id);
+  if(idx===-1) return;
+  testimonials[idx].approved = testimonials[idx].approved===false ? true : false;
+  saveData('testimonials',testimonials);
+  renderTestimonials();
+  toast(testimonials[idx].approved ? 'Testimonial approved — now visible on site' : 'Testimonial hidden from site');
+}
+
+/* ===================== FAQS CRUD ===================== */
+function renderFaqs(){
+  document.getElementById('faqsBody').innerHTML = faqs.map((f,i)=>`
+    <tr><td>${escapeHtml(f.q)}</td><td>${escapeHtml(f.a.slice(0,60))}${f.a.length>60?'...':''}</td>
+    <td class="row-actions"><button class="action-icon" onclick="editFaq(${i})">${ICONS.edit}</button><button class="action-icon" onclick="deleteFaq(${i})">${ICONS.trash}</button></td></tr>
+  `).join('') || `<tr><td colspan="3" class="empty-state">No FAQs yet.</td></tr>`;
+}
+document.getElementById('addFaqBtn').addEventListener('click',()=>openFaqModal());
+function openFaqModal(index=null){
+  const f = index!==null ? faqs[index] : null;
+  openModal(`
+    <h3>${f?'Edit':'Add'} FAQ</h3>
+    <div class="field"><label>Question</label><input id="faqQ" value="${f?escapeHtml(f.q):''}"></div>
+    <div class="field"><label>Answer</label><textarea id="faqA">${f?escapeHtml(f.a):''}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn" id="saveFaqBtn">${f?'Update':'Add'}</button></div>
+  `);
+  document.getElementById('saveFaqBtn').addEventListener('click',()=>saveFaq(index));
+}
+function saveFaq(index){
+  const q=document.getElementById('faqQ').value.trim();
+  const a=document.getElementById('faqA').value.trim();
+  if(!q||!a){ toast('Question and answer are required', true); return; }
+  if(index!==null) faqs[index]={q,a}; else faqs.push({q,a});
+  saveData('faqs',faqs); renderFaqs(); closeModal(); toast('FAQ saved');
+}
+function editFaq(i){ openFaqModal(i); }
+function deleteFaq(i){ if(confirm('Delete this FAQ?')){ faqs.splice(i,1); saveData('faqs',faqs); renderFaqs(); toast('FAQ deleted'); } }
+
+/* ===================== MESSAGES ===================== */
+let msgSearchTerm='';
+function renderMessages(){
+  let list = messages.filter(m=>m.name.toLowerCase().includes(msgSearchTerm.toLowerCase()) || m.subject.toLowerCase().includes(msgSearchTerm.toLowerCase()));
+  document.getElementById('messagesBody').innerHTML = list.map(m=>`
+    <tr>
+      <td>${escapeHtml(m.name)}</td>
+      <td>${escapeHtml(m.email)}</td>
+      <td>${escapeHtml(m.subject)}</td>
+      <td>${new Date(m.date).toLocaleDateString()}</td>
+      <td><span class="pill ${m.read?'':'unread'}">${m.read?'Read':'Unread'}</span></td>
+      <td class="row-actions">
+        <button class="action-icon" onclick="viewMessage(${m.id})">${ICONS.eye}</button>
+        <button class="action-icon" onclick="deleteMessage(${m.id})">${ICONS.trash}</button>
+      </td>
+    </tr>`).join('') || `<tr><td colspan="6" class="empty-state">No messages yet.</td></tr>`;
+  renderStats();
+}
+document.getElementById('msgSearch').addEventListener('input',(e)=>{ msgSearchTerm=e.target.value; renderMessages(); });
+function viewMessage(id){
+  const m = messages.find(x=>x.id===id);
+  if(!m) return;
+  m.read=true; saveData('messages',messages); renderMessages();
+  openModal(`
+    <h3>Message from ${escapeHtml(m.name)}</h3>
+    <div class="field"><label>Email</label><input value="${escapeHtml(m.email)}" disabled></div>
+    <div class="field"><label>Phone</label><input value="${escapeHtml(m.phone||'—')}" disabled></div>
+    <div class="field"><label>Subject</label><input value="${escapeHtml(m.subject)}" disabled></div>
+    <div class="field"><label>Message</label><textarea disabled style="min-height:140px;">${escapeHtml(m.message)}</textarea></div>
+    <div class="modal-actions">
+      <a class="btn btn-outline" href="mailto:${escapeHtml(m.email)}">Reply via Email</a>
+      <button class="btn" onclick="closeModal()">Close</button>
+    </div>`);
+}
+function deleteMessage(id){ if(confirm('Delete this message?')){ messages=messages.filter(m=>m.id!==id); saveData('messages',messages); renderMessages(); toast('Message deleted'); } }
+
+/* ===================== WEBSITE SETTINGS ===================== */
+function loadSettingsForm(){
+  document.getElementById('setSiteName').value = settings.siteName;
+  document.getElementById('setHeroTitle').value = settings.heroTitle;
+  document.getElementById('setHeroSubtitle').value = settings.heroSubtitle;
+  document.getElementById('setAboutTitle').value = settings.aboutTitle;
+  document.getElementById('setAboutContent').value = settings.aboutContent;
+  document.getElementById('setEmail').value = settings.email;
+  document.getElementById('setPhone1').value = settings.phone1;
+  document.getElementById('setPhone2').value = settings.phone2;
+  document.getElementById('setStat1Num').value = settings.stat1Num;
+  document.getElementById('setStat1Label').value = settings.stat1Label;
+  document.getElementById('setStat2Num').value = settings.stat2Num;
+  document.getElementById('setStat2Label').value = settings.stat2Label;
+  document.getElementById('setStat3Num').value = settings.stat3Num;
+  document.getElementById('setStat3Label').value = settings.stat3Label;
+  document.getElementById('setStat4Num').value = settings.stat4Num;
+  document.getElementById('setStat4Label').value = settings.stat4Label;
+  document.getElementById('setFooterText').value = settings.footerText;
+
+  document.getElementById('logoFieldContainer').innerHTML = buildUploadBox('setLogo', settings.logo||'', 'image/*', 'Click to upload logo image').replace('<label>Media Upload (Cloudinary)</label>','<label>Website Logo</label>');
+  wireUploadBox('setLogo','Click to upload logo image');
+
+  document.getElementById('heroImageFieldContainer').innerHTML = buildUploadBox('setHeroImage', settings.heroImage||'', 'image/*', 'Click to upload hero section image').replace('<label>Media Upload (Cloudinary)</label>','<label>Hero Section Image (replaces the briefcase icon)</label>');
+  wireUploadBox('setHeroImage','Click to upload hero section image');
+
+  document.getElementById('aboutImageFieldContainer').innerHTML = buildUploadBox('setAboutImage', settings.aboutImage||'', 'image/*', 'Click to upload about section image').replace('<label>Media Upload (Cloudinary)</label>','<label>About Section Image (replaces the palette icon)</label>');
+  wireUploadBox('setAboutImage','Click to upload about section image');
+}
+document.getElementById('saveSettingsBtn').addEventListener('click',()=>{
+  settings = {
+    ...settings,
+    siteName: document.getElementById('setSiteName').value.trim() || settings.siteName,
+    heroTitle: document.getElementById('setHeroTitle').value.trim(),
+    heroSubtitle: document.getElementById('setHeroSubtitle').value.trim(),
+    aboutTitle: document.getElementById('setAboutTitle').value.trim(),
+    aboutContent: document.getElementById('setAboutContent').value.trim(),
+    email: document.getElementById('setEmail').value.trim(),
+    phone1: document.getElementById('setPhone1').value.trim(),
+    phone2: document.getElementById('setPhone2').value.trim(),
+    stat1Num: document.getElementById('setStat1Num').value.trim(),
+    stat1Label: document.getElementById('setStat1Label').value.trim(),
+    stat2Num: document.getElementById('setStat2Num').value.trim(),
+    stat2Label: document.getElementById('setStat2Label').value.trim(),
+    stat3Num: document.getElementById('setStat3Num').value.trim(),
+    stat3Label: document.getElementById('setStat3Label').value.trim(),
+    stat4Num: document.getElementById('setStat4Num').value.trim(),
+    stat4Label: document.getElementById('setStat4Label').value.trim(),
+    footerText: document.getElementById('setFooterText').value.trim(),
+    logo: document.getElementById('setLogo').value.trim() || settings.logo || '',
+    heroImage: document.getElementById('setHeroImage').value.trim() || settings.heroImage || '',
+    aboutImage: document.getElementById('setAboutImage').value.trim() || settings.aboutImage || ''
+  };
+  saveData('settings',settings);
+  toast('Website settings updated — changes are live on the website');
+});
+document.getElementById('changePassBtn').addEventListener('click',()=>{
+  const val=document.getElementById('newPassInput').value.trim();
+  if(val.length<4){ toast('Password must be at least 4 characters', true); return; }
+  localStorage.setItem('enywise_admin_pass', val);
+  document.getElementById('newPassInput').value='';
+  toast('Admin password updated successfully');
+});
+
+/* ===================== AI SETTINGS ===================== */
+function loadAiSettingsForm(){
+  document.getElementById('aiKeyDisplay').value = localStorage.getItem('enywise_groq_key') || '';
+}
+document.getElementById('saveAiKeyBtn').addEventListener('click',()=>{
+  const val=document.getElementById('aiKeyDisplay').value.trim();
+  if(!val){ toast('Please enter a key', true); return; }
+  localStorage.setItem('enywise_groq_key', val);
+  toast('Groq API key saved on this device');
+});
+document.getElementById('clearAiKeyBtn').addEventListener('click',()=>{
+  localStorage.removeItem('enywise_groq_key');
+  document.getElementById('aiKeyDisplay').value='';
+  toast('Groq API key cleared from this device');
+});
+
+/* ===================== LIVE SYNC ===================== */
+window.addEventListener('storage',(e)=>{
+  if(!e.key || !e.key.startsWith('enywise_')) return;
+  settings=loadData('settings'); services=loadData('services'); skills=loadData('skills'); categories=loadData('categories');
+  projects=loadData('projects'); gallery=loadData('gallery'); testimonials=loadData('testimonials');
+  faqs=loadData('faqs'); messages=loadData('messages');
+  if(appEl.classList.contains('show')) initDashboard();
+});
+</script>
+</body>
+</html>
